@@ -62,6 +62,8 @@ export function disposeMaterial(material) {
 export function disposeObject(object) {
   if (!object) return;
 
+  object.removeFromParent();
+
   object.traverse((child) => {
     if (child.isMesh) {
       const { geometry, material } = child;

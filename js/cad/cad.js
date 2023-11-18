@@ -1,7 +1,11 @@
 import * as THREE from "three";
 
+import {
+  KeyStateSystem,
+  PointerStateSystem,
+  StatsSystem,
+} from "./systems/index.js";
 import { PenTool, SelectTool } from "./tools/index.js";
-import { PointerStateSystem, StatsSystem } from "./systems/index.js";
 
 import { TileEntity } from "./entities/index.js";
 import { Tools } from "../constants/constants.js";
@@ -17,10 +21,11 @@ export default class CAD {
   #pixelRatio = window.devicePixelRatio; // Display ratio
   #aspect = 1; // Camera aspect
   // Systems
-  #statsSystem = null; // Stats
-  #pointerStateSystem = null; // Pointer state
+  #statsSystem = new StatsSystem(this); // Stats
+  #pointerStateSystem = new PointerStateSystem(this); // Pointer state
+  #keyStateSystem = new KeyStateSystem(this); // Pointer state
   // Entities
-  #entities = {}; // Entities hashmap
+  #entities = new Map(); // Entities hashmap
   #tileEntityId = null;
   // Tools
   #activeTool = null;
@@ -103,6 +108,31 @@ export default class CAD {
     return this.#camera;
   }
 
+  // Getter of entities
+  get entities() {
+    return this.#entities;
+  }
+
+  // Getter of tileEntityId
+  get tileEntityId() {
+    return this.#tileEntityId;
+  }
+
+  // Getter of pointerStateSystem
+  get pointerStateSystem() {
+    return this.#pointerStateSystem;
+  }
+
+  // Getter of keyStateSystem
+  get keyStateSystem() {
+    return this.#keyStateSystem;
+  }
+
+  // Getter of active tool
+  get activeTool() {
+    return this.#activeTool;
+  }
+
   /**
    * Initialize
    */
@@ -111,7 +141,9 @@ export default class CAD {
     this.update = this.update.bind(this);
 
     await this.#initEntities();
-    this.#initSystems();
+    this.#statsSystem.init();
+    this.#pointerStateSystem.init();
+    this.#keyStateSystem.init();
     this.#initEventListeners();
 
     // Set select tool as active one
@@ -131,21 +163,6 @@ export default class CAD {
     this.#scene.add(tileEntity);
     this.#entities[tileEntity.id] = tileEntity;
     this.#tileEntityId = tileEntity.id;
-  }
-
-  /**
-   * Initialize systems
-   */
-  #initSystems() {
-    // Stats system
-    const statsSystem = new StatsSystem(this);
-    statsSystem.init();
-    this.#statsSystem = statsSystem;
-
-    // Pointer state system
-    const pointerStateSystem = new PointerStateSystem(this);
-    pointerStateSystem.init();
-    this.#pointerStateSystem = pointerStateSystem;
   }
 
   /**
@@ -180,11 +197,20 @@ export default class CAD {
    * Set active tool
    */
   setActiveTool(tool) {
+    let toolBtn = null;
+
     if (this.#activeTool !== null) {
       this.#activeTool.dispose();
+      // Remove active class from tool button
+      toolBtn = document.getElementById(`${this.#activeTool.id}-tool`);
+      toolBtn.classList.remove("active");
     }
     this.#activeTool = this.#createTool(tool);
     this.#activeTool.init();
+
+    // Add active class from tool button
+    toolBtn = document.getElementById(`${tool}-tool`);
+    toolBtn.classList.add("active");
   }
 
   /**
@@ -205,9 +231,15 @@ export default class CAD {
   update() {
     this.render();
 
+    // Update entities
+    for (const key in this.#entities) {
+      this.#entities[key].update();
+    }
     // Update systems
     this.#statsSystem.update();
     this.#pointerStateSystem.update();
+    this.#keyStateSystem.update();
+    // Update active tool
     this.#activeTool.update();
   }
 
@@ -229,6 +261,7 @@ export default class CAD {
     }
     this.#statsSystem.dispose(); // Dispose stats system
     this.#pointerStateSystem.dispose(); // Dispose pointer state system
+    this.#keyStateSystem.dispose(); // Dispose key state system
     this.#activeTool.dispose(); // Dispose active tool
     this.#renderer.domElement.remove(); // Remove the canvas
   }

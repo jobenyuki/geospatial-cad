@@ -49,3 +49,16 @@ body,
   display: flex;
   gap: 4px;
 }
+
+.toolButton {
+  outline: none;
+  padding: 8px;
+  border-radius: 4px;
+  width: 80px;
+  border: none;
+  user-select: none;
+}
+
+.toolButton.active {
+  background: cyan;
+}

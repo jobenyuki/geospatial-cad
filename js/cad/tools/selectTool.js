@@ -2,8 +2,10 @@ import * as THREE from "three";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Tool } from "./tool.js";
+import { Tools } from "../../constants/constants.js";
 
 export class SelectTool extends Tool {
+  id = Tools.SELECT;
   #cameraControls; // Orbit control
 
   constructor(cad) {
@@ -19,12 +21,33 @@ export class SelectTool extends Tool {
    * Initialize
    */
   init() {
-    const cameraControls = new OrbitControls(
-      this._cad.camera,
-      this._cad.renderer.domElement
-    );
+    const { camera, renderer, pointerStateSystem, entities } = this._cad;
+
+    // Init camera controls
+    const cameraControls = new OrbitControls(camera, renderer.domElement);
     this.#cameraControls = cameraControls;
+
+    // TODO
+    // // Set intersectable objects
+    // pointerStateSystem.clearEntities()
+
+    // pointerStateSystem.add(entities)
   }
+
+  /**
+   * Pointer down listener
+   */
+  onPointerDown(event, intersect) {}
+
+  /**
+   * Pointer move listener
+   */
+  onPointerMove(event, intersect) {}
+
+  /**
+   * Pointer up listener
+   */
+  onPointerUp(event, intersect) {}
 
   /**
    * Update
