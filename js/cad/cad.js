@@ -259,7 +259,10 @@ export default class CAD {
    * @returns
    */
   updateBuildingEntity(height, pitchDir, pitch) {
-    if (this.#activeBuildingId === null) return;
+    if (this.#activeBuildingId === null) {
+      alert("Please select 3D building first");
+      return;
+    }
 
     const entity = this.#entities[this.#activeBuildingId];
     entity.height = height;

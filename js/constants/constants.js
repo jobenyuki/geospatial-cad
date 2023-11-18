@@ -28,3 +28,7 @@ export const MOUSE_BUTTON = {
 };
 
 export const SNAP_RANGE = 0.01;
+
+// TODO This value is just placeholder for calculating meter roughly. Should follow API description like below:
+// https://docs.mapbox.com/help/glossary/zoom-level/#zoom-levels-and-geographical-distance
+export const ZOOM_FACTOR = 0.01;

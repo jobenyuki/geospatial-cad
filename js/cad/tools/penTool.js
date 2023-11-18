@@ -5,6 +5,8 @@ import { MOUSE_BUTTON, TOOLS } from "../../constants/constants.js";
 import { LineEntity } from "../entities/index.js";
 import { Tool } from "./tool.js";
 
+const OFFSET_VECTOR3 = new THREE.Vector3(0, 0.005, 0);
+
 export class PenTool extends Tool {
   id = TOOLS.PEN;
   #lineEntity;
@@ -48,7 +50,7 @@ export class PenTool extends Tool {
   onPointerMove(event, intersect) {
     if (intersect === null) return;
 
-    this.#lineEntity.addGuidePoint(intersect.point);
+    this.#lineEntity.addGuidePoint(intersect.point.add(OFFSET_VECTOR3));
   }
 
   /**
@@ -57,12 +59,15 @@ export class PenTool extends Tool {
   onPointerUp(event, intersect) {
     if (event.button !== MOUSE_BUTTON.LEFT || intersect === null) return;
 
-    const isClosed = this.#lineEntity.addPoint(intersect.point);
+    const isClosed = this.#lineEntity.addPoint(
+      intersect.point.add(OFFSET_VECTOR3)
+    );
 
     // If the polygon is done, make building
     if (isClosed) {
       this._cad.addBuildingEntity(this.#lineEntity.points);
       this.#lineEntity.dispose(); // TODO There is no undo/redo and edit functionality for the line entity yet. Recommended for better UX
+      this._cad.setActiveTool(TOOLS.SELECT);
     }
   }
 

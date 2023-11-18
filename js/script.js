@@ -1,7 +1,8 @@
 import * as THREE from "three";
 
+import { TOOLS, ZOOM_FACTOR } from "./constants/constants.js";
+
 import CAD from "./cad/cad.js";
-import { TOOLS } from "./constants/constants.js";
 
 const root = document.getElementById("root");
 const selectToolBtn = document.getElementById("select-tool");
@@ -34,7 +35,7 @@ submitBuildingSettingsBtn.addEventListener("click", (event) => {
   ).value;
 
   cad.updateBuildingEntity(
-    parseFloat(height),
+    parseFloat(height) * ZOOM_FACTOR,
     pitchAxis === "x" ? [1, 0, 0] : [0, 0, 1],
     THREE.MathUtils.degToRad(parseFloat(pitch))
   );

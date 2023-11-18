@@ -64,7 +64,6 @@ export class LineEntity extends Entity {
     ); // 2 points are enough for the guide line
 
     this.add(this.#mesh, this.#guideMesh);
-    this.position.y = 0.1;
     this.matrixAutoUpdate = false;
   }
 

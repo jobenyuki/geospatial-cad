@@ -22,7 +22,8 @@ export class SelectTool extends Tool {
       MIDDLE: THREE.MOUSE.PAN,
       RIGHT: THREE.MOUSE.ROTATE,
     };
-    // TODO
+
+    // TODO Buildings should be interactable
     // // Set intersectable objects
     // pointerStateSystem.clearEntities()
     // pointerStateSystem.add(entities)
