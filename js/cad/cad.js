@@ -7,8 +7,8 @@ import {
 } from "./systems/index.js";
 import { PenTool, SelectTool } from "./tools/index.js";
 
+import { TOOLS } from "../constants/constants.js";
 import { TileEntity } from "./entities/index.js";
-import { Tools } from "../constants/constants.js";
 
 export default class CAD {
   // Essential renderer parameters
@@ -147,7 +147,7 @@ export default class CAD {
     this.#initEventListeners();
 
     // Set select tool as active one
-    this.setActiveTool(Tools.SELECT);
+    this.setActiveTool(TOOLS.SELECT);
 
     // Render loop
     this.#renderer.setAnimationLoop(this.update);
@@ -218,7 +218,7 @@ export default class CAD {
    */
   #createTool(tool) {
     switch (tool) {
-      case Tools.PEN:
+      case TOOLS.PEN:
         return new PenTool(this);
       default:
         return new SelectTool(this);

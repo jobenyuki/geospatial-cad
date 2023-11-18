@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { TOOLS } from "../../constants/constants.js";
 import { Tool } from "./tool.js";
-import { Tools } from "../../constants/constants.js";
 
 export class SelectTool extends Tool {
-  id = Tools.SELECT;
+  id = TOOLS.SELECT;
   #cameraControls; // Orbit control
 
   constructor(cad) {

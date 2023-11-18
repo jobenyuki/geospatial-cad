@@ -1,5 +1,5 @@
 import CAD from "./cad/cad.js";
-import { Tools } from "./constants/constants.js";
+import { TOOLS } from "./constants/constants.js";
 
 const root = document.getElementById("root");
 const selectToolBtn = document.getElementById("select-tool");
@@ -9,9 +9,9 @@ const cad = new CAD(root);
 cad.init();
 
 selectToolBtn.addEventListener("click", () => {
-  cad.setActiveTool(Tools.SELECT);
+  cad.setActiveTool(TOOLS.SELECT);
 });
 
 penToolBtn.addEventListener("click", () => {
-  cad.setActiveTool(Tools.PEN);
+  cad.setActiveTool(TOOLS.PEN);
 });

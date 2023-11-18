@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 export const MAPBOX_SATELLITE_API_HOST =
   "https://api.mapbox.com/v4/mapbox.satellite";
 
@@ -10,7 +12,11 @@ export const DEFAULT_MAPBOX_SETTINGS = {
   zoom: 18,
 };
 
-export const Tools = {
+export const DUMMY_VECTOR3 = new THREE.Vector3();
+
+export const TOOLS = {
   SELECT: "select",
   PEN: "pen",
 };
+
+export const SNAP_RANGE = 0.01;

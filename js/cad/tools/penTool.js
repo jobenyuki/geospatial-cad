@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
 import { LineEntity } from "../entities/index.js";
+import { TOOLS } from "../../constants/constants.js";
 import { Tool } from "./tool.js";
-import { Tools } from "../../constants/constants.js";
 
 export class PenTool extends Tool {
-  id = Tools.PEN;
+  id = TOOLS.PEN;
   #lineEntity;
 
   constructor(cad) {
@@ -37,7 +37,11 @@ export class PenTool extends Tool {
   /**
    * Pointer move listener
    */
-  onPointerMove(event, intersect) {}
+  onPointerMove(event, intersect) {
+    if (intersect === null) return;
+
+    this.#lineEntity.addGuidePoint(intersect.point);
+  }
 
   /**
    * Pointer up listener
