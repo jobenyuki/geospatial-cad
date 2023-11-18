@@ -178,6 +178,27 @@ export function generateBuildingSideVertices(points, topPoints) {
   return vertices;
 }
 
+// Generate uvs, only generating UV of top vertices
+export function generateBuildingUVs(vertices, shouldEmpty = false) {
+  let uvs = [];
+  for (let i = 0; i < vertices.length; i++) {
+    if (shouldEmpty) {
+      uvs.push(0);
+      uvs.push(0);
+    } else {
+      const vertex = vertices[i];
+
+      if (i % 3 === 0) {
+        uvs.push(vertex + 0.5);
+      } else if (i % 3 === 2) {
+        uvs.push(-vertex + 0.5);
+      }
+    }
+  }
+
+  return uvs;
+}
+
 // Generate building geometry params
 export function generateBuildingGeometryParameters(
   points,
@@ -188,9 +209,16 @@ export function generateBuildingGeometryParameters(
   const topPoints = generateBuildingTopPoints(points, height, dir, pitch);
 
   const vertices = [];
+  const uvs = [];
   // vertices.push(...triangulate(points)); // TODO Confirm: no need to render base
-  vertices.push(...triangulate(topPoints));
-  vertices.push(...generateBuildingSideVertices(points, topPoints));
+  const topVertices = triangulate(topPoints);
+  const sideVertices = generateBuildingSideVertices(points, topPoints);
+  const topUVs = generateBuildingUVs(topVertices);
+  const sideUVs = generateBuildingUVs(sideVertices, true);
+  vertices.push(...topVertices);
+  vertices.push(...sideVertices);
+  uvs.push(...topUVs);
+  uvs.push(...sideUVs);
 
-  return vertices;
+  return { vertices, uvs };
 }

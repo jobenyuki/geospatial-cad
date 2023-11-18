@@ -68,45 +68,23 @@ export class BuildingEntity extends Entity {
       return;
     }
 
-    const vertices = generateBuildingGeometryParameters(
-      this.#points,
-      this.#height,
-      this.#pitchDir,
-      this.#pitch
-    );
+    const { entities, tileEntityId } = this._cad;
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(new Float32Array(vertices), 3)
-    );
-    geometry.computeVertexNormals();
-    // TODO
-    // const normalNumComponents = 3;
-    // const uvNumComponents = 2;
-    // // geometry.setAttribute(
-    // //   "normal",
-    // //   new THREE.BufferAttribute(new Float32Array(normals), normalNumComponents)
-    // // );
-    // // geometry.setAttribute(
-    // //   "uv",
-    // //   new THREE.BufferAttribute(new Float32Array(uvs), uvNumComponents)
-    // // );
-
-    this.#mesh.geometry = geometry;
-    this.#mesh.material = new THREE.MeshStandardMaterial({
-      color: 0xeeeeee,
-      side: THREE.DoubleSide,
+    this.#mesh.geometry = new THREE.BufferGeometry();
+    this.#mesh.material = new THREE.MeshBasicMaterial({
+      map: entities[tileEntityId].mesh.material.map, // Passing tile texture to building
     });
     this.add(this.#mesh);
     this.matrixAutoUpdate = false;
+
+    this.rebuild();
   }
 
   /**
-   * Rebuild building
+   * Rebuild building shape
    */
   rebuild() {
-    const vertices = generateBuildingGeometryParameters(
+    const { vertices, uvs } = generateBuildingGeometryParameters(
       this.#points,
       this.#height,
       this.#pitchDir,
@@ -116,6 +94,10 @@ export class BuildingEntity extends Entity {
     this.#mesh.geometry.setAttribute(
       "position",
       new THREE.BufferAttribute(new Float32Array(vertices), 3)
+    );
+    this.#mesh.geometry.setAttribute(
+      "uv",
+      new THREE.BufferAttribute(new Float32Array(uvs), 2)
     );
     this.#mesh.geometry.computeVertexNormals();
   }
