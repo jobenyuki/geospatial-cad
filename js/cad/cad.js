@@ -1,5 +1,6 @@
 import * as THREE from "three";
 
+import { BuildingEntity, TileEntity } from "./entities/index.js";
 import {
   KeyStateSystem,
   PointerStateSystem,
@@ -9,7 +10,6 @@ import { PenTool, SelectTool } from "./tools/index.js";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { TOOLS } from "../constants/constants.js";
-import { TileEntity } from "./entities/index.js";
 
 export default class CAD {
   // Essential renderer parameters
@@ -29,6 +29,7 @@ export default class CAD {
   // Entities
   #entities = new Map(); // Entities hashmap
   #tileEntityId = null;
+  #activeBuildingId = null;
   // Tools
   #activeTool = null;
 
@@ -61,7 +62,7 @@ export default class CAD {
 
     // Init camera controls
     const cameraControls = new OrbitControls(camera, renderer.domElement);
-    cameraControls.maxPolarAngle = Math.PI / 6;
+    cameraControls.maxPolarAngle = Math.PI / 2.5;
     this.#cameraControls = cameraControls;
 
     // Initialize lights
@@ -235,6 +236,36 @@ export default class CAD {
       default:
         return new SelectTool(this);
     }
+  }
+
+  /**
+   * Add building entity with given points(Array<[x,y,z]>)
+   * @param points
+   */
+  addBuildingEntity(points) {
+    const entity = new BuildingEntity(this);
+    entity.points = points;
+    entity.init();
+    this.#scene.add(entity);
+    this.#entities[entity.id] = entity;
+    this.#activeBuildingId = entity.id;
+  }
+
+  /**
+   * Update building settings
+   * @param height
+   * @param pitchDir
+   * @param pitch
+   * @returns
+   */
+  updateBuildingEntity(height, pitchDir, pitch) {
+    if (this.#activeBuildingId === null) return;
+
+    const entity = this.#entities[this.#activeBuildingId];
+    entity.height = height;
+    entity.pitchDir = pitchDir;
+    entity.pitch = pitch;
+    entity.rebuild();
   }
 
   /**

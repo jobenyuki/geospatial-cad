@@ -62,3 +62,32 @@ body,
 .toolButton.active {
   background: cyan;
 }
+
+.buildingPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pitchAxisPanel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.pitchAxisPanel > * {
+  flex-grow: 1;
+  margin: 0;
+}
+
+.submitBtn {
+  margin-top: 8px;
+  outline: none;
+  padding: 8px;
+  border-radius: 4px;
+  width: 100%;
+  border: none;
+  user-select: none;
+}

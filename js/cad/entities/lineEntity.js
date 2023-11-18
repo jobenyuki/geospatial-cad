@@ -8,9 +8,9 @@ import { LineGeometry } from "three/addons/lines/LineGeometry";
 import { LineMaterial } from "three/addons/lines/LineMaterial";
 
 export class LineEntity extends Entity {
-  #mesh = new Line2();
-  #guideMesh = new Line2();
-  #points = [];
+  #mesh = new Line2(); // Main line
+  #guideMesh = new Line2(); // Guide line
+  #points = []; // Points array: Array<[x, y, z]>
   #canSnap = false;
   #isClosed = false;
 
@@ -40,7 +40,7 @@ export class LineEntity extends Entity {
     // Main line mesh
     // TODO Fixme: Instantiating LineGeometry requires to setup initial instance count. This number is not mutable once setup.
     // this.#mesh.geometry = new LineGeometry();
-    // this.#mesh.geometry.setPositions(this.#points);
+    // this.#mesh.geometry.setPositions(this.#points.flat());
     this.#mesh.material = new LineMaterial({
       color: 0xff0000,
       linewidth: 5,
@@ -64,6 +64,7 @@ export class LineEntity extends Entity {
     ); // 2 points are enough for the guide line
 
     this.add(this.#mesh, this.#guideMesh);
+    this.position.y = 0.1;
     this.matrixAutoUpdate = false;
   }
 
@@ -74,25 +75,25 @@ export class LineEntity extends Entity {
     // Closed? then abort
     if (this.#isClosed) return;
 
+    let points = [];
     // Try to close the line
     if (this.#canSnap) {
-      this.#points.push(this.#points[0]);
-      this.#points.push(this.#points[1]);
-      this.#points.push(this.#points[2]);
+      points = [...this.#points, this.#points[0]];
       this.#isClosed = true;
     } else {
-      this.#points.push(point.x);
-      this.#points.push(point.y);
-      this.#points.push(point.z);
+      this.#points.push(point.toArray());
+      points = this.#points;
     }
 
     // At least 2 points are needed to draw line
-    if (this.#points.length < 6) return;
+    if (this.#points.length < 2) return;
 
     // TODO Creating new geometry whenever mouse click should not be efficient. Research to fix this problem.
     this.#mesh.geometry.dispose();
     this.#mesh.geometry = new LineGeometry();
-    this.#mesh.geometry.setPositions(this.#points);
+    this.#mesh.geometry.setPositions(points.flat());
+
+    return this.#isClosed;
   }
 
   /**
@@ -105,25 +106,20 @@ export class LineEntity extends Entity {
     const pointsLength = this.#points.length;
 
     // At least 1 point is needed to draw guide line
-    if (pointsLength < 3) return;
+    if (pointsLength < 1) return;
 
     // Evaluate if the point can be snapped to first point
-    if (pointsLength >= 9) {
+    if (pointsLength >= 3) {
       this.#canSnap =
-        point.distanceTo(
-          DUMMY_VECTOR3.set(this.#points[0], this.#points[1], this.#points[2])
-        ) <= SNAP_RANGE;
+        point.distanceTo(DUMMY_VECTOR3.fromArray(this.#points[0])) <=
+        SNAP_RANGE;
     }
 
     const guidePoints = [
-      this.#points[pointsLength - 3],
-      this.#points[pointsLength - 2],
       this.#points[pointsLength - 1],
-      this.#canSnap ? this.#points[0] : point.x,
-      this.#canSnap ? this.#points[1] : point.y,
-      this.#canSnap ? this.#points[2] : point.z,
+      this.#canSnap ? this.#points[0] : point.toArray(),
     ];
-    this.#guideMesh.geometry.setPositions(guidePoints);
+    this.#guideMesh.geometry.setPositions(guidePoints.flat());
     this.#guideMesh.computeLineDistances();
   }
 

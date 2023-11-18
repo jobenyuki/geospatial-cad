@@ -43,11 +43,6 @@ export class PenTool extends Tool {
   }
 
   /**
-   * Pointer down listener
-   */
-  onPointerDown(event, intersect) {}
-
-  /**
    * Pointer move listener
    */
   onPointerMove(event, intersect) {
@@ -62,7 +57,22 @@ export class PenTool extends Tool {
   onPointerUp(event, intersect) {
     if (event.button !== MOUSE_BUTTON.LEFT || intersect === null) return;
 
-    this.#lineEntity.addPoint(intersect.point);
+    const isClosed = this.#lineEntity.addPoint(intersect.point);
+
+    // If the polygon is done, make building
+    if (isClosed) {
+      this._cad.addBuildingEntity(this.#lineEntity.points);
+      this.#lineEntity.dispose(); // TODO There is no undo/redo and edit functionality for the line entity yet. Recommended for better UX
+    }
+  }
+
+  /**
+   * Key down listener
+   */
+  onKeyDown(event) {
+    if (event.key === "Escape") {
+      this._cad.setActiveTool(TOOLS.SELECT);
+    }
   }
 
   /**

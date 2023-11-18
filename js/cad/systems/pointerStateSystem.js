@@ -152,11 +152,6 @@ export class PointerStateSystem extends System {
   }
 
   /**
-   * Update
-   */
-  update() {}
-
-  /**
    * Dispose
    */
   dispose() {
