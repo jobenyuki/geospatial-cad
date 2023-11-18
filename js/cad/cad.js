@@ -1,8 +1,10 @@
 import * as THREE from "three";
 
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { StatsSystem } from "./systems/index.js";
+import { PenTool, SelectTool } from "./tools/index.js";
+import { PointerStateSystem, StatsSystem } from "./systems/index.js";
+
 import { TileEntity } from "./entities/index.js";
+import { Tools } from "../constants/constants.js";
 
 export default class CAD {
   // Essential renderer parameters
@@ -10,16 +12,18 @@ export default class CAD {
   #renderer; // Webgl renderer
   #scene; // Scene
   #camera; // Perspective camera
-  #cameraControls; // Orbit control
   #width = 1; // Canvas width
   #height = 1; // Canvas height
   #pixelRatio = window.devicePixelRatio; // Display ratio
   #aspect = 1; // Camera aspect
   // Systems
   #statsSystem = null; // Stats
+  #pointerStateSystem = null; // Pointer state
   // Entities
   #entities = {}; // Entities hashmap
   #tileEntityId = null;
+  // Tools
+  #activeTool = null;
 
   constructor(container) {
     this.#container = container;
@@ -103,18 +107,24 @@ export default class CAD {
    * Initialize
    */
   async init() {
-    await this.initEntities();
-    this.initCameraControls();
-    this.initStatsSystem();
-    this.initEventListeners();
+    this.onWindowResize = this.onWindowResize.bind(this);
+    this.update = this.update.bind(this);
 
+    await this.#initEntities();
+    this.#initSystems();
+    this.#initEventListeners();
+
+    // Set select tool as active one
+    this.setActiveTool(Tools.SELECT);
+
+    // Render loop
     this.#renderer.setAnimationLoop(this.update);
   }
 
   /**
    * Initialize entities
    */
-  async initEntities() {
+  async #initEntities() {
     // Add tile entity
     const tileEntity = new TileEntity(this);
     await tileEntity.init();
@@ -124,43 +134,38 @@ export default class CAD {
   }
 
   /**
-   * Initialize camera controls
+   * Initialize systems
    */
-  initCameraControls() {
-    const cameraControls = new OrbitControls(
-      this.#camera,
-      this.#renderer.domElement
-    );
-    this.#cameraControls = cameraControls;
-  }
-
-  /**
-   * Initialize stats system
-   */
-  initStatsSystem() {
+  #initSystems() {
+    // Stats system
     const statsSystem = new StatsSystem(this);
     statsSystem.init();
     this.#statsSystem = statsSystem;
+
+    // Pointer state system
+    const pointerStateSystem = new PointerStateSystem(this);
+    pointerStateSystem.init();
+    this.#pointerStateSystem = pointerStateSystem;
   }
 
   /**
    * Initialize event listeners
    */
-  initEventListeners = () => {
+  #initEventListeners() {
     window.addEventListener("resize", this.onWindowResize, false);
-  };
+  }
 
   /**
    * Dispose event listeners
    */
-  disposeEventListeners = () => {
+  #disposeEventListeners() {
     window.removeEventListener("resize", this.onWindowResize, false);
-  };
+  }
 
   /**
    * Window resize listener
    */
-  onWindowResize = () => {
+  onWindowResize() {
     this.#width = this.#container.offsetWidth;
     this.#height = this.#container.offsetHeight;
     const newAspect = this.#width / this.#height;
@@ -169,18 +174,42 @@ export default class CAD {
     this.#camera.aspect = this.#aspect;
     this.#camera.updateProjectionMatrix();
     this.#renderer.setSize(this.#width, this.#height);
-  };
+  }
 
   /**
-   * Tick
+   * Set active tool
    */
-  update = () => {
+  setActiveTool(tool) {
+    if (this.#activeTool !== null) {
+      this.#activeTool.dispose();
+    }
+    this.#activeTool = this.#createTool(tool);
+    this.#activeTool.init();
+  }
+
+  /**
+   * Create tool
+   */
+  #createTool(tool) {
+    switch (tool) {
+      case Tools.PEN:
+        return new PenTool(this);
+      default:
+        return new SelectTool(this);
+    }
+  }
+
+  /**
+   * Update
+   */
+  update() {
     this.render();
 
-    // Update systems and helpers
+    // Update systems
     this.#statsSystem.update();
-    this.#cameraControls.update();
-  };
+    this.#pointerStateSystem.update();
+    this.#activeTool.update();
+  }
 
   /**
    * Render
@@ -193,13 +222,14 @@ export default class CAD {
    * Dispose
    */
   dispose() {
-    this.disposeEventListeners(); // Remove event listeners
+    this.#disposeEventListeners(); // Remove event listeners
     // Dispose all entities
     for (const key in this.#entities) {
       this.#entities[key].dispose();
     }
     this.#statsSystem.dispose(); // Dispose stats system
-    this.#cameraControls.dispose(); // Dispose camera controls
+    this.#pointerStateSystem.dispose(); // Dispose pointer state system
+    this.#activeTool.dispose(); // Dispose active tool
     this.#renderer.domElement.remove(); // Remove the canvas
   }
 }

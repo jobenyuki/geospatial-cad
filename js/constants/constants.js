@@ -9,3 +9,8 @@ export const DEFAULT_MAPBOX_SETTINGS = {
   lon: -123.1001613,
   zoom: 18,
 };
+
+export const Tools = {
+  SELECT: "select",
+  PEN: "pen",
+};
