@@ -19,4 +19,12 @@ export const TOOLS = {
   PEN: "pen",
 };
 
+export const MOUSE_BUTTON = {
+  LEFT: 0, // Main button pressed, usually the left button or the un-initialized state
+  MIDDLE: 1, // Auxiliary button pressed, usually the wheel button or the middle button (if present)
+  RIGHT: 2, // Secondary button pressed, usually the right button
+  BACK: 3, // Fourth button, typically the Browser Back button
+  FORWARD: 4, // Fifth button, typically the Browser Forward button
+};
+
 export const SNAP_RANGE = 0.01;

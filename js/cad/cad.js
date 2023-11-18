@@ -7,6 +7,7 @@ import {
 } from "./systems/index.js";
 import { PenTool, SelectTool } from "./tools/index.js";
 
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { TOOLS } from "../constants/constants.js";
 import { TileEntity } from "./entities/index.js";
 
@@ -16,6 +17,7 @@ export default class CAD {
   #renderer; // Webgl renderer
   #scene; // Scene
   #camera; // Perspective camera
+  #cameraControls; // Orbit control
   #width = 1; // Canvas width
   #height = 1; // Canvas height
   #pixelRatio = window.devicePixelRatio; // Display ratio
@@ -56,6 +58,11 @@ export default class CAD {
     const camera = new THREE.PerspectiveCamera(45, this.#aspect, 0.1, 1000);
     camera.position.set(1, 1, 1);
     scene.add(camera);
+
+    // Init camera controls
+    const cameraControls = new OrbitControls(camera, renderer.domElement);
+    cameraControls.maxPolarAngle = Math.PI / 6;
+    this.#cameraControls = cameraControls;
 
     // Initialize lights
     const directLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -106,6 +113,11 @@ export default class CAD {
   // Getter of camera
   get camera() {
     return this.#camera;
+  }
+
+  // Getter of camera controls
+  get cameraControls() {
+    return this.#cameraControls;
   }
 
   // Getter of entities
@@ -231,6 +243,8 @@ export default class CAD {
   update() {
     this.render();
 
+    // Update camera controls
+    this.#cameraControls.update();
     // Update entities
     for (const key in this.#entities) {
       this.#entities[key].update();
@@ -255,6 +269,7 @@ export default class CAD {
    */
   dispose() {
     this.#disposeEventListeners(); // Remove event listeners
+    this.#cameraControls.dispose(); // Dispose camera controls
     // Dispose all entities
     for (const key in this.#entities) {
       this.#entities[key].dispose();

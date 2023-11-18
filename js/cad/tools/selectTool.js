@@ -1,36 +1,30 @@
 import * as THREE from "three";
 
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { TOOLS } from "../../constants/constants.js";
 import { Tool } from "./tool.js";
 
 export class SelectTool extends Tool {
   id = TOOLS.SELECT;
-  #cameraControls; // Orbit control
 
   constructor(cad) {
     super(cad);
-  }
-
-  // Getter of camera controls
-  get cameraControls() {
-    return this.#cameraControls;
   }
 
   /**
    * Initialize
    */
   init() {
-    const { camera, renderer, pointerStateSystem, entities } = this._cad;
+    const { cameraControls } = this._cad;
 
-    // Init camera controls
-    const cameraControls = new OrbitControls(camera, renderer.domElement);
-    this.#cameraControls = cameraControls;
-
+    // Mouse actions for camera controls
+    cameraControls.mouseButtons = {
+      LEFT: THREE.MOUSE.DOLLY,
+      MIDDLE: THREE.MOUSE.PAN,
+      RIGHT: THREE.MOUSE.ROTATE,
+    };
     // TODO
     // // Set intersectable objects
     // pointerStateSystem.clearEntities()
-
     // pointerStateSystem.add(entities)
   }
 
@@ -52,14 +46,10 @@ export class SelectTool extends Tool {
   /**
    * Update
    */
-  update() {
-    this.#cameraControls.update();
-  }
+  update() {}
 
   /**
    * Dispose
    */
-  dispose() {
-    this.#cameraControls.dispose();
-  }
+  dispose() {}
 }

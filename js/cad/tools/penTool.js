@@ -1,7 +1,8 @@
 import * as THREE from "three";
 
+import { MOUSE_BUTTON, TOOLS } from "../../constants/constants.js";
+
 import { LineEntity } from "../entities/index.js";
-import { TOOLS } from "../../constants/constants.js";
 import { Tool } from "./tool.js";
 
 export class PenTool extends Tool {
@@ -16,7 +17,19 @@ export class PenTool extends Tool {
    * Initialize
    */
   init() {
-    const { scene, pointerStateSystem, entities, tileEntityId } = this._cad;
+    const {
+      scene,
+      cameraControls,
+      pointerStateSystem,
+      entities,
+      tileEntityId,
+    } = this._cad;
+
+    // Mouse actions for camera controls
+    cameraControls.mouseButtons = {
+      MIDDLE: THREE.MOUSE.PAN,
+      RIGHT: THREE.MOUSE.ROTATE,
+    };
 
     // Add line entity which representing drawal
     const lineEntity = new LineEntity(this._cad);
@@ -47,7 +60,7 @@ export class PenTool extends Tool {
    * Pointer up listener
    */
   onPointerUp(event, intersect) {
-    if (intersect === null) return;
+    if (event.button !== MOUSE_BUTTON.LEFT || intersect === null) return;
 
     this.#lineEntity.addPoint(intersect.point);
   }
