@@ -1,6 +1,8 @@
 import * as THREE from "three";
 
-import { StatsSystem } from "./systems/statsSystem.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { StatsSystem } from "./systems/index.js";
+import { TileEntity } from "./entities/index.js";
 
 export default class CAD {
   // Essential renderer parameters
@@ -8,12 +10,16 @@ export default class CAD {
   #renderer; // Webgl renderer
   #scene; // Scene
   #camera; // Perspective camera
+  #cameraControls; // Orbit control
   #width = 1; // Canvas width
   #height = 1; // Canvas height
   #pixelRatio = window.devicePixelRatio; // Display ratio
   #aspect = 1; // Camera aspect
   // Systems
   #statsSystem = null; // Stats
+  // Entities
+  #entities = {}; // Entities hashmap
+  #tileEntityId = null;
 
   constructor(container) {
     this.#container = container;
@@ -39,12 +45,12 @@ export default class CAD {
 
     // Initialize camera
     const camera = new THREE.PerspectiveCamera(45, this.#aspect, 0.1, 1000);
-    camera.position.set(0, 0, 10);
+    camera.position.set(1, 1, 1);
     scene.add(camera);
 
     // Initialize lights
-    const directLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    const ambientLight = new THREE.AmbientLight(0x404040);
+    const directLight = new THREE.DirectionalLight(0xffffff, 1);
+    const ambientLight = new THREE.AmbientLight(0x808080);
     scene.add(directLight);
     scene.add(ambientLight);
 
@@ -98,6 +104,7 @@ export default class CAD {
    */
   async init() {
     await this.initEntities();
+    this.initCameraControls();
     this.initStatsSystem();
     this.initEventListeners();
 
@@ -108,14 +115,27 @@ export default class CAD {
    * Initialize entities
    */
   async initEntities() {
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    this.#scene.add(cube);
+    // Add tile entity
+    const tileEntity = new TileEntity(this);
+    await tileEntity.init();
+    this.#scene.add(tileEntity);
+    this.#entities[tileEntity.id] = tileEntity;
+    this.#tileEntityId = tileEntity.id;
   }
 
   /**
-   * Initialize stats syste,
+   * Initialize camera controls
+   */
+  initCameraControls() {
+    const cameraControls = new OrbitControls(
+      this.#camera,
+      this.#renderer.domElement
+    );
+    this.#cameraControls = cameraControls;
+  }
+
+  /**
+   * Initialize stats system
    */
   initStatsSystem() {
     const statsSystem = new StatsSystem(this);
@@ -157,8 +177,9 @@ export default class CAD {
   update = () => {
     this.render();
 
-    // Update systems
+    // Update systems and helpers
     this.#statsSystem.update();
+    this.#cameraControls.update();
   };
 
   /**
@@ -172,11 +193,13 @@ export default class CAD {
    * Dispose
    */
   dispose() {
-    // Remove event listeners
-    this.disposeEventListeners();
-    // Dispose stats system
-    this.#statsSystem.dispose();
-    // Remove the canvas
-    this.#renderer.domElement.remove();
+    this.disposeEventListeners(); // Remove event listeners
+    // Dispose all entities
+    for (const key in this.#entities) {
+      this.#entities[key].dispose();
+    }
+    this.#statsSystem.dispose(); // Dispose stats system
+    this.#cameraControls.dispose(); // Dispose camera controls
+    this.#renderer.domElement.remove(); // Remove the canvas
   }
 }
